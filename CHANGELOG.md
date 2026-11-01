@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.0] - 2026-11-01
+
+Logo pequeño del cronómetro antes del nombre en la cabecera del widget.
+
 ## [1.5.0] - 2026-11-01
 
 La app pasa a llamarse CronoLean (antes JM Tiempos). El nombre interno no cambia, así que se instala encima sin perder la configuración.
