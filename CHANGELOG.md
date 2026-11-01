@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.0] - 2026-11-01
+
+La app pasa a llamarse CronoLean (antes JM Tiempos). El nombre interno no cambia, así que se instala encima sin perder la configuración.
+
 ## [1.4.0] - 2026-11-01
 
 Cabecera en el widget con el cronómetro: gris parado, verde en marcha y naranja si hay que revisar las horas. El check «Hecha» pasa junto al botón.

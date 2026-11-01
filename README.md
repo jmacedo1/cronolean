@@ -1,6 +1,6 @@
-# JM Tiempos
+# CronoLean
 
-App Android con un widget para registrar en Leantime el tiempo dedicado a cada tarea, sin pasar por Claude.
+App Android con un widget para registrar en Leantime el tiempo dedicado a cada tarea, con un solo toque. Proyecto independiente, sin relación oficial con Leantime.
 
 ## Qué hace el widget
 

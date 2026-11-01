@@ -12,5 +12,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "JM_Tiempos"
+rootProject.name = "CronoLean"
 include(":app")

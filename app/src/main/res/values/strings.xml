@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">JM Tiempos</string>
+    <string name="app_name">CronoLean</string>
     <string name="widget_description">Elige una tarea de Leantime, inicia y para el tiempo y anota qué has hecho</string>
     <string name="choose_task">▾ Elegir tarea</string>
     <string name="note_hint">Toca para anotar qué haces…</string>

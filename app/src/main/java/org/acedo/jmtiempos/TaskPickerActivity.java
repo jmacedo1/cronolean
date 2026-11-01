@@ -113,7 +113,7 @@ public class TaskPickerActivity extends Activity {
 
         load(store.tasksJson());
         if (!store.configured()) {
-            message.setText("Configura primero la conexión en la app JM Tiempos.");
+            message.setText("Configura primero la conexión en la app CronoLean.");
             return;
         }
         message.setText(all.isEmpty() ? "Cargando tareas…" : "Actualizando…");
