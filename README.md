@@ -4,6 +4,7 @@ App Android con un widget para registrar en Leantime el tiempo dedicado a cada t
 
 ## Qué hace el widget
 
+- **Cabecera:** el cronómetro, en gris parado, verde en marcha y naranja si hay que revisar.
 - **Tarea:** se toca para elegirla, con filtro de empresa (proyecto de Leantime), buscador y las últimas usadas primero. La empresa con la que se abre se elige en los ajustes.
 - **Nota:** se toca y se escribe en una ventana pequeña. Android no admite cajas de texto dentro de un widget. Se envía como descripción del registro.
 - **Cronómetro y botón único:** verde «Iniciar», rojo «Parar», naranja «Revisar».

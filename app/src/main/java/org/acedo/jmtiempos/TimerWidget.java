@@ -11,7 +11,7 @@ import android.view.View;
 import android.widget.RemoteViews;
 
 /**
- * Widget: tarea, nota, cronómetro y un único botón que cambia de texto y color.
+ * Widget: cabecera con el cronómetro, tarea, nota, check de hecha y un único botón que cambia de texto y color.
  * Android no admite cajas de texto en un widget: la nota se escribe en una ventana pequeña.
  * Lo que abre cada toque se decide al pintar, porque desde un receptor en segundo plano
  * Android no deja abrir pantallas.
@@ -83,6 +83,8 @@ public class TimerWidget extends AppWidgetProvider {
             text = R.string.start;
             background = R.drawable.btn_start;
         }
+        v.setInt(R.id.header, "setBackgroundResource", s.running() ? R.drawable.header_running
+                : s.reviewPending() ? R.drawable.header_review : R.drawable.header_idle);
         v.setTextViewText(R.id.toggle, c.getString(text));
         v.setInt(R.id.toggle, "setBackgroundResource", background);
         v.setOnClickPendingIntent(R.id.toggle, toggle);

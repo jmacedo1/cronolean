@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.0] - 2026-11-01
+
+Cabecera en el widget con el cronómetro: gris parado, verde en marcha y naranja si hay que revisar las horas. El check «Hecha» pasa junto al botón.
+
 ## [1.3.0] - 2026-11-01
 
 Check para marcar la tarea como hecha: con el cronómetro en marcha se aplica al parar; parado, pide confirmación. Usa el estado "hecho" de cada proyecto y, si no hay conexión, se reintenta como el tiempo.

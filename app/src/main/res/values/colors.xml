@@ -4,6 +4,7 @@
     <color name="widget_text">#FF1F2933</color>
     <color name="widget_muted">#FF616E7C</color>
     <color name="widget_stroke">#FFCBD2D9</color>
+    <color name="header_idle">#FF52606D</color>
     <color name="start">#FF1E8E3E</color>
     <color name="stop">#FFD93025</color>
     <color name="review">#FFE37400</color>

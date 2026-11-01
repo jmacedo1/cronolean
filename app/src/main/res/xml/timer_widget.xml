@@ -4,7 +4,7 @@
     android:initialLayout="@layout/widget_timer"
     android:previewLayout="@layout/widget_timer"
     android:minWidth="250dp"
-    android:minHeight="120dp"
+    android:minHeight="150dp"
     android:targetCellWidth="4"
     android:targetCellHeight="2"
     android:resizeMode="horizontal|vertical"
