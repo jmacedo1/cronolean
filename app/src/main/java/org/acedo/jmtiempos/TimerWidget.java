@@ -11,25 +11,18 @@ import android.view.View;
 import android.widget.RemoteViews;
 
 /**
- * Widget: cabecera con el cronómetro, tarea, nota, check de hecha y un único botón que cambia de texto y color.
+ * Widget: cabecera con el cronómetro, tarea, nota, estado de la tarea y un único botón que cambia de texto y color.
  * Android no admite cajas de texto en un widget: la nota se escribe en una ventana pequeña.
  * Lo que abre cada toque se decide al pintar, porque desde un receptor en segundo plano
  * Android no deja abrir pantallas.
  */
 public class TimerWidget extends AppWidgetProvider {
     private static final String ACTION_TOGGLE = "org.acedo.jmtiempos.TOGGLE";
-    private static final String ACTION_CHECK = "org.acedo.jmtiempos.CHECK";
 
     @Override
     public void onReceive(Context c, Intent i) {
         if (ACTION_TOGGLE.equals(i.getAction())) {
             Timer.toggle(c);
-            return;
-        }
-        if (ACTION_CHECK.equals(i.getAction())) {
-            Store s = new Store(c);
-            s.setMarkDone(!s.markDone());
-            refreshAll(c);
             return;
         }
         super.onReceive(c, i);
@@ -89,15 +82,13 @@ public class TimerWidget extends AppWidgetProvider {
         v.setInt(R.id.toggle, "setBackgroundResource", background);
         v.setOnClickPendingIntent(R.id.toggle, toggle);
 
-        // En marcha el check solo se apunta, y se aplica al parar; parado, pide confirmación.
-        boolean showCheck = s.configured() && s.ticketId() != 0 && !s.reviewPending();
-        v.setViewVisibility(R.id.check, showCheck ? View.VISIBLE : View.GONE);
-        if (showCheck && s.running()) {
-            v.setTextViewText(R.id.check, (s.markDone() ? "☑" : "☐") + " Hecha al parar");
-            v.setOnClickPendingIntent(R.id.check, broadcast(c, ACTION_CHECK, 10));
-        } else if (showCheck) {
-            v.setTextViewText(R.id.check, "☐ Hecha");
-            v.setOnClickPendingIntent(R.id.check, activity(c, DoneActivity.class, 7));
+        boolean showState = s.configured() && s.ticketId() != 0 && !s.reviewPending();
+        v.setViewVisibility(R.id.state, showState ? View.VISIBLE : View.GONE);
+        if (showState) {
+            String state = s.markDone() ? (s.closeStatusName().isEmpty() ? "Hecho" : s.closeStatusName()) + " al parar"
+                    : s.ticketStatusName().isEmpty() ? "Estado" : s.ticketStatusName();
+            v.setTextViewText(R.id.state, "▾ " + state);
+            v.setOnClickPendingIntent(R.id.state, activity(c, StatusActivity.class, 7));
         }
 
         v.setOnClickPendingIntent(R.id.task, activity(c, TaskPickerActivity.class, 4));

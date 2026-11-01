@@ -27,7 +27,11 @@ public class SyncJobService extends JobService {
         for (int i = 0; i < q.length(); i++) {
             JSONObject item = q.optJSONObject(i);
             try {
-                if ("done".equals(item.optString("type"))) {
+                if ("status".equals(item.optString("type"))) {
+                    api.setStatus(item.getInt("ticketId"), item.getInt("status"));
+                    String change = item.optString("statusName");
+                    sent = sent.isEmpty() ? "✓ #" + item.getInt("ticketId") + " → " + change : sent + " → " + change;
+                } else if ("done".equals(item.optString("type"))) {
                     api.markDone(item.getInt("ticketId"));
                     sent = sent.isEmpty() ? "✓ #" + item.getInt("ticketId") + " hecha" : sent + " · hecha";
                 } else {

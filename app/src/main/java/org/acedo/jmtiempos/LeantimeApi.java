@@ -11,6 +11,12 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /** Cliente mínimo de la API JSON-RPC de Leantime (/api/jsonrpc + x-api-key). */
 final class LeantimeApi {
@@ -34,7 +40,7 @@ final class LeantimeApi {
         c.setRequestMethod("POST");
         c.setDoOutput(true);
         c.setRequestProperty("Content-Type", "application/json");
-        c.setRequestProperty("User-Agent", "CronoLean/1.6");
+        c.setRequestProperty("User-Agent", "CronoLean/1.7");
         c.setRequestProperty("x-api-key", apiKey);
         byte[] body = new JSONObject()
                 .put("jsonrpc", "2.0")
@@ -71,27 +77,71 @@ final class LeantimeApi {
         }
     }
 
-    /** Tareas abiertas: [{id, headline, projectName}], sin hitos. */
-    JSONArray openTasks() throws IOException, ApiException, JSONException {
+    /**
+     * Estados de un proyecto en el orden del tablero: [{id, name, done}].
+     * Cada proyecto puede tener los suyos, también con otros nombres y números.
+     */
+    JSONArray statusLabels(int projectId) throws IOException, ApiException, JSONException {
+        Object r = rpc("Tickets.getStatusLabels", new JSONObject().put("projectId", projectId));
+        List<JSONObject> labels = new ArrayList<>();
+        if (r instanceof JSONObject) {
+            JSONObject all = (JSONObject) r;
+            for (Iterator<String> keys = all.keys(); keys.hasNext(); ) {
+                String key = keys.next();
+                JSONObject l = all.getJSONObject(key);
+                labels.add(new JSONObject()
+                        .put("id", Integer.parseInt(key))
+                        .put("name", l.optString("name"))
+                        .put("done", "DONE".equals(l.optString("statusType")))
+                        .put("sortKey", l.optInt("sortKey")));
+            }
+        }
+        labels.sort(Comparator.comparingInt(l -> l.optInt("sortKey")));
+        return new JSONArray(labels);
+    }
+
+    /** Proyecto y estado actuales de una tarea. */
+    JSONObject ticket(int ticketId) throws IOException, ApiException, JSONException {
+        Object r = rpc("Tickets.getTicket", new JSONObject().put("id", ticketId));
+        if (!(r instanceof JSONObject)) throw new ApiException("Leantime no encuentra la tarea");
+        return (JSONObject) r;
+    }
+
+    /** Tareas abiertas: [{id, headline, projectId, projectName, status}], sin hitos. Guarda los estados de cada proyecto. */
+    JSONArray openTasks(Store s) throws IOException, ApiException, JSONException {
         JSONObject criteria = new JSONObject().put("currentProject", "").put("currentUser", "");
         Object r = rpc("Tickets.getAll", new JSONObject().put("searchCriteria", criteria).put("limit", 500));
         JSONArray out = new JSONArray();
         if (!(r instanceof JSONArray)) return out;
         JSONArray all = (JSONArray) r;
+        Map<Integer, JSONArray> labels = new HashMap<>();
         for (int i = 0; i < all.length(); i++) {
             JSONObject t = all.getJSONObject(i);
+            if ("milestone".equals(t.optString("type"))) continue;
+            int project = t.optInt("projectId");
+            if (!labels.containsKey(project)) {
+                labels.put(project, statusLabels(project));
+                s.setStatusLabels(project, labels.get(project));
+            }
             int status = t.optInt("status", -1);
-            boolean open = status == 3 || status == 4 || status == 2 || status == 1;
-            if (!open || "milestone".equals(t.optString("type"))) continue;
+            if (Store.isDone(labels.get(project), status)) continue;
             out.put(new JSONObject()
                     .put("id", t.getInt("id"))
                     .put("headline", t.optString("headline"))
-                    .put("projectName", t.optString("projectName")));
+                    .put("projectId", project)
+                    .put("projectName", t.optString("projectName"))
+                    .put("status", status));
         }
         return out;
     }
 
-    /** Pasa la tarea al estado "hecho" de su proyecto, sea cual sea su número en ese proyecto. */
+    void setStatus(int ticketId, int status) throws IOException, ApiException, JSONException {
+        Object r = rpc("Tickets.patchTicket", new JSONObject().put("id", ticketId)
+                .put("values", new JSONObject().put("status", status)));
+        if (Boolean.FALSE.equals(r)) throw new ApiException("Leantime no ha cambiado el estado de la tarea");
+    }
+
+    /** Pasa la tarea al estado "hecho" de su proyecto. Solo para peticiones guardadas por versiones anteriores. */
     void markDone(int ticketId) throws IOException, ApiException, JSONException {
         Object r = rpc("Tickets.setTicketStatusByType", new JSONObject().put("ticketId", ticketId).put("statusType", "done"));
         if (Boolean.FALSE.equals(r)) throw new ApiException("Leantime no ha cambiado el estado de la tarea");

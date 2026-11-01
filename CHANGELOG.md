@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.7.0] - 2026-11-01
+
+- El check «Hecha» pasa a ser un selector con todos los estados del proyecto de la tarea, y el widget muestra el estado actual.
+- Sin cobertura, el cambio se envía al recuperarla.
+- La lista de tareas ya incluye las de estados propios, como «Espera de otra persona».
+
 ## [1.6.0] - 2026-11-01
 
 Logo pequeño del cronómetro antes del nombre en la cabecera del widget.

@@ -63,13 +63,65 @@ final class Store {
     String status() { return p.getString("status", ""); }
     String lastError() { return p.getString("lastError", ""); }
 
-    void setTicket(int id, String name) {
+    int ticketProject() { return p.getInt("ticketProject", 0); }
+    /** Estado de la tarea actual; vacío si aún no se conoce. */
+    String ticketStatusName() { return p.getString("ticketStatusName", ""); }
+    int ticketStatus() { return p.getInt("ticketStatus", Integer.MIN_VALUE); }
+
+    void setTicket(int id, String name, int project, int status) {
         p.edit().putInt("ticketId", id).putString("ticketName", name).apply();
+        setTicketState(project, status);
         rememberRecent(id);
     }
-    void clearTicket() { p.edit().remove("ticketId").remove("ticketName").apply(); }
+
+    void setTicketState(int project, int status) {
+        p.edit().putInt("ticketProject", project).putInt("ticketStatus", status)
+                .putString("ticketStatusName", statusName(statusLabels(project), status)).apply();
+    }
+
+    void clearTicket() {
+        p.edit().remove("ticketId").remove("ticketName").remove("ticketProject")
+                .remove("ticketStatus").remove("ticketStatusName").apply();
+    }
+
+    /** Con el cronómetro en marcha, cerrar la tarea espera a parar: si no, el tiempo quedaría sin tarea. */
     boolean markDone() { return p.getBoolean("markDone", false); }
-    void setMarkDone(boolean v) { p.edit().putBoolean("markDone", v).apply(); }
+    int closeStatus() { return p.getInt("closeStatus", 0); }
+    String closeStatusName() { return p.getString("closeStatusName", ""); }
+    void setClose(int status, String name) {
+        p.edit().putBoolean("markDone", true).putInt("closeStatus", status).putString("closeStatusName", name).apply();
+    }
+    void setMarkDone(boolean v) {
+        p.edit().putBoolean("markDone", v).remove("closeStatus").remove("closeStatusName").apply();
+    }
+
+    /** Estados guardados de un proyecto, para poder cambiarlos sin cobertura. */
+    JSONArray statusLabels(int project) {
+        try {
+            return new JSONArray(p.getString("labels" + project, "[]"));
+        } catch (JSONException e) {
+            return new JSONArray();
+        }
+    }
+    void setStatusLabels(int project, JSONArray labels) { p.edit().putString("labels" + project, labels.toString()).apply(); }
+
+    static boolean isDone(JSONArray labels, int status) {
+        for (int i = 0; i < labels.length(); i++) {
+            JSONObject l = labels.optJSONObject(i);
+            if (l.optInt("id") == status) return l.optBoolean("done");
+        }
+        // Sin etiqueta conocida: los números de Leantime para cerrada y archivada.
+        return status <= 0;
+    }
+
+    private static String statusName(JSONArray labels, int status) {
+        for (int i = 0; i < labels.length(); i++) {
+            JSONObject l = labels.optJSONObject(i);
+            if (l.optInt("id") == status) return l.optString("name");
+        }
+        return "";
+    }
+
     void setNote(String v) { p.edit().putString("note", v.trim()).apply(); }
     void setStart(long ms) { p.edit().putLong("start", ms).apply(); }
     void setStatus(String v) { p.edit().putString("status", v).apply(); }
@@ -155,6 +207,21 @@ final class Store {
                     .put("type", "done")
                     .put("ticketId", ticketId)
                     .put("ticketName", ticketName);
+            p.edit().putString("queue", queue().put(o).toString()).commit();
+        } catch (JSONException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    synchronized void enqueueStatus(int ticketId, String ticketName, int status, String statusName) {
+        try {
+            JSONObject o = new JSONObject()
+                    .put("id", UUID.randomUUID().toString())
+                    .put("type", "status")
+                    .put("ticketId", ticketId)
+                    .put("ticketName", ticketName)
+                    .put("status", status)
+                    .put("statusName", statusName);
             p.edit().putString("queue", queue().put(o).toString()).commit();
         } catch (JSONException e) {
             throw new IllegalStateException(e);

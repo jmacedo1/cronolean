@@ -28,8 +28,12 @@ public class TaskPickerActivity extends Activity {
         final int id;
         final String headline;
         final String project;
+        final int projectId;
+        final int status;
 
         Task(JSONObject o) {
+            projectId = o.optInt("projectId");
+            status = o.optInt("status", Integer.MIN_VALUE);
             id = o.optInt("id");
             headline = o.optString("headline");
             project = o.optString("projectName");
@@ -89,7 +93,7 @@ public class TaskPickerActivity extends Activity {
 
         list.setOnItemClickListener((p, v, pos, id) -> {
             Task t = shown.get(pos);
-            store.setTicket(t.id, t.headline);
+            store.setTicket(t.id, t.headline, t.projectId, t.status);
             TimerWidget.refreshAll(this);
             finish();
         });
@@ -119,7 +123,7 @@ public class TaskPickerActivity extends Activity {
         message.setText(all.isEmpty() ? "Cargando tareas…" : "Actualizando…");
         new Thread(() -> {
             try {
-                String json = new LeantimeApi(store).openTasks().toString();
+                String json = new LeantimeApi(store).openTasks(store).toString();
                 store.setTasksJson(json);
                 runOnUiThread(() -> {
                     load(json);

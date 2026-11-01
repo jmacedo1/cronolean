@@ -93,7 +93,7 @@ public class MainActivity extends Activity {
             new Thread(() -> {
                 String text;
                 try {
-                    JSONArray tasks = new LeantimeApi(store).openTasks();
+                    JSONArray tasks = new LeantimeApi(store).openTasks(store);
                     store.setTasksJson(tasks.toString());
                     text = "✓ Conectado: " + tasks.length() + " tareas abiertas";
                 } catch (Exception e) {
@@ -162,7 +162,9 @@ public class MainActivity extends Activity {
             JSONObject item = q.optJSONObject(i);
             TextView row = new TextView(this);
             row.setText("#" + item.optInt("ticketId") + " " + item.optString("ticketName") + ": "
-                    + ("done".equals(item.optString("type"))
+                    + ("status".equals(item.optString("type"))
+                        ? "cambiar a " + item.optString("statusName")
+                        : "done".equals(item.optString("type"))
                         ? "marcar como hecha"
                         : Timer.format(item.optDouble("hours")) + " h"));
             pendingBox.addView(row);

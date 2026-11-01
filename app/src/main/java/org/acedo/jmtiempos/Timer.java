@@ -52,9 +52,13 @@ final class Timer {
         scheduleSync(c);
     }
 
-    /** Marca la tarea actual como hecha y deja el widget listo para elegir otra. */
+    /** Cierra la tarea actual con el estado elegido y deja el widget listo para elegir otra. */
     static void finishTask(Context c, Store s) {
-        s.enqueueDone(s.ticketId(), s.ticketName());
+        if (s.closeStatusName().isEmpty()) {
+            s.enqueueDone(s.ticketId(), s.ticketName());
+        } else {
+            s.enqueueStatus(s.ticketId(), s.ticketName(), s.closeStatus(), s.closeStatusName());
+        }
         s.removeCachedTask(s.ticketId());
         s.clearTicket();
         s.setMarkDone(false);
