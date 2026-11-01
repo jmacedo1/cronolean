@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.0] - 2026-11-01
+
+Check para marcar la tarea como hecha: con el cronómetro en marcha se aplica al parar; parado, pide confirmación. Usa el estado "hecho" de cada proyecto y, si no hay conexión, se reintenta como el tiempo.
+
 ## [1.2.0] - 2026-11-01
 
 La dirección de Leantime ya no viene puesta: se escribe al configurar la app. Quien ya la tenga guardada la conserva.

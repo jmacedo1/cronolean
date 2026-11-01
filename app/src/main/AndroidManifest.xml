@@ -23,6 +23,9 @@
         <activity android:name=".ReviewActivity" android:exported="false" android:excludeFromRecents="true"
             android:taskAffinity="" android:theme="@android:style/Theme.DeviceDefault.Light.Dialog" />
 
+        <activity android:name=".DoneActivity" android:exported="false" android:excludeFromRecents="true"
+            android:taskAffinity="" android:theme="@android:style/Theme.DeviceDefault.Light.Dialog" />
+
         <receiver android:name=".TimerWidget" android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />

@@ -91,6 +91,12 @@ final class LeantimeApi {
         return out;
     }
 
+    /** Pasa la tarea al estado "hecho" de su proyecto, sea cual sea su número en ese proyecto. */
+    void markDone(int ticketId) throws IOException, ApiException, JSONException {
+        Object r = rpc("Tickets.setTicketStatusByType", new JSONObject().put("ticketId", ticketId).put("statusType", "done"));
+        if (Boolean.FALSE.equals(r)) throw new ApiException("Leantime no ha cambiado el estado de la tarea");
+    }
+
     /**
      * Registra el tiempo con la hora real de inicio. Leantime suma las horas y mezcla las
      * descripciones de los registros con la misma fecha y hora: al llevar segundos, cada

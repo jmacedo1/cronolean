@@ -162,7 +162,9 @@ public class MainActivity extends Activity {
             JSONObject item = q.optJSONObject(i);
             TextView row = new TextView(this);
             row.setText("#" + item.optInt("ticketId") + " " + item.optString("ticketName") + ": "
-                    + Timer.format(item.optDouble("hours")) + " h");
+                    + ("done".equals(item.optString("type"))
+                        ? "marcar como hecha"
+                        : Timer.format(item.optDouble("hours")) + " h"));
             pendingBox.addView(row);
             Button discard = new Button(this);
             discard.setText("Descartar");

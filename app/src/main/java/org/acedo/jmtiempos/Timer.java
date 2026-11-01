@@ -21,6 +21,7 @@ final class Timer {
         if (s.running()) {
             stop(c, s, System.currentTimeMillis());
         } else if (s.ticketId() != 0 && s.configured() && !s.reviewPending()) {
+            s.setMarkDone(false);
             s.setStart(System.currentTimeMillis());
             s.setStatus("");
         }
@@ -33,6 +34,7 @@ final class Timer {
         s.setStart(0);
         if (elapsed < MIN_MS) {
             s.setStatus("Cancelado: menos de 30 segundos");
+            if (s.markDone()) finishTask(c, s);
         } else if (elapsed >= REVIEW_MS) {
             s.setReview(start, hours(elapsed));
             s.setStatus("Llevaba " + format(hours(elapsed)) + " h. Revísalo antes de guardar");
@@ -46,6 +48,16 @@ final class Timer {
         s.setNote("");
         s.clearReview();
         s.setStatus("Enviando " + format(hours) + " h…");
+        if (s.markDone()) finishTask(c, s);
+        scheduleSync(c);
+    }
+
+    /** Marca la tarea actual como hecha y deja el widget listo para elegir otra. */
+    static void finishTask(Context c, Store s) {
+        s.enqueueDone(s.ticketId(), s.ticketName());
+        s.removeCachedTask(s.ticketId());
+        s.clearTicket();
+        s.setMarkDone(false);
         scheduleSync(c);
     }
 

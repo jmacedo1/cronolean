@@ -7,6 +7,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.SystemClock;
+import android.view.View;
 import android.widget.RemoteViews;
 
 /**
@@ -17,11 +18,18 @@ import android.widget.RemoteViews;
  */
 public class TimerWidget extends AppWidgetProvider {
     private static final String ACTION_TOGGLE = "org.acedo.jmtiempos.TOGGLE";
+    private static final String ACTION_CHECK = "org.acedo.jmtiempos.CHECK";
 
     @Override
     public void onReceive(Context c, Intent i) {
         if (ACTION_TOGGLE.equals(i.getAction())) {
             Timer.toggle(c);
+            return;
+        }
+        if (ACTION_CHECK.equals(i.getAction())) {
+            Store s = new Store(c);
+            s.setMarkDone(!s.markDone());
+            refreshAll(c);
             return;
         }
         super.onReceive(c, i);
@@ -63,7 +71,7 @@ public class TimerWidget extends AppWidgetProvider {
             text = R.string.review;
             background = R.drawable.btn_review;
         } else if (s.running()) {
-            toggle = broadcast(c);
+            toggle = broadcast(c, ACTION_TOGGLE, 0);
             text = R.string.stop;
             background = R.drawable.btn_stop;
         } else if (s.ticketId() == 0) {
@@ -71,13 +79,25 @@ public class TimerWidget extends AppWidgetProvider {
             text = R.string.start;
             background = R.drawable.btn_start;
         } else {
-            toggle = broadcast(c);
+            toggle = broadcast(c, ACTION_TOGGLE, 0);
             text = R.string.start;
             background = R.drawable.btn_start;
         }
         v.setTextViewText(R.id.toggle, c.getString(text));
         v.setInt(R.id.toggle, "setBackgroundResource", background);
         v.setOnClickPendingIntent(R.id.toggle, toggle);
+
+        // En marcha el check solo se apunta, y se aplica al parar; parado, pide confirmación.
+        boolean showCheck = s.configured() && s.ticketId() != 0 && !s.reviewPending();
+        v.setViewVisibility(R.id.check, showCheck ? View.VISIBLE : View.GONE);
+        if (showCheck && s.running()) {
+            v.setTextViewText(R.id.check, (s.markDone() ? "☑" : "☐") + " Hecha al parar");
+            v.setOnClickPendingIntent(R.id.check, broadcast(c, ACTION_CHECK, 10));
+        } else if (showCheck) {
+            v.setTextViewText(R.id.check, "☐ Hecha");
+            v.setOnClickPendingIntent(R.id.check, activity(c, DoneActivity.class, 7));
+        }
+
         v.setOnClickPendingIntent(R.id.task, activity(c, TaskPickerActivity.class, 4));
         v.setOnClickPendingIntent(R.id.note, activity(c, NoteActivity.class, 5));
         v.setOnClickPendingIntent(R.id.status, activity(c, MainActivity.class, 6));
@@ -89,8 +109,8 @@ public class TimerWidget extends AppWidgetProvider {
         return PendingIntent.getActivity(c, code, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
-    private static PendingIntent broadcast(Context c) {
-        Intent i = new Intent(c, TimerWidget.class).setAction(ACTION_TOGGLE);
-        return PendingIntent.getBroadcast(c, 0, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+    private static PendingIntent broadcast(Context c, String action, int code) {
+        Intent i = new Intent(c, TimerWidget.class).setAction(action);
+        return PendingIntent.getBroadcast(c, code, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 }

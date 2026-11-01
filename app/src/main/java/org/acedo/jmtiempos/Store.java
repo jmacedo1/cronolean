@@ -67,6 +67,9 @@ final class Store {
         p.edit().putInt("ticketId", id).putString("ticketName", name).apply();
         rememberRecent(id);
     }
+    void clearTicket() { p.edit().remove("ticketId").remove("ticketName").apply(); }
+    boolean markDone() { return p.getBoolean("markDone", false); }
+    void setMarkDone(boolean v) { p.edit().putBoolean("markDone", v).apply(); }
     void setNote(String v) { p.edit().putString("note", v.trim()).apply(); }
     void setStart(long ms) { p.edit().putLong("start", ms).apply(); }
     void setStatus(String v) { p.edit().putString("status", v).apply(); }
@@ -141,6 +144,34 @@ final class Store {
             p.edit().putString("queue", queue().put(o).toString()).commit();
         } catch (JSONException e) {
             throw new IllegalStateException(e);
+        }
+    }
+
+    /** Va en un registro aparte del tiempo: un reintento no debe volver a sumar las horas. */
+    synchronized void enqueueDone(int ticketId, String ticketName) {
+        try {
+            JSONObject o = new JSONObject()
+                    .put("id", UUID.randomUUID().toString())
+                    .put("type", "done")
+                    .put("ticketId", ticketId)
+                    .put("ticketName", ticketName);
+            p.edit().putString("queue", queue().put(o).toString()).commit();
+        } catch (JSONException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    void removeCachedTask(int ticketId) {
+        try {
+            JSONArray a = new JSONArray(tasksJson());
+            JSONArray out = new JSONArray();
+            for (int i = 0; i < a.length(); i++) {
+                JSONObject o = a.getJSONObject(i);
+                if (o.optInt("id") != ticketId) out.put(o);
+            }
+            setTasksJson(out.toString());
+        } catch (JSONException ignored) {
+            // La lista guardada se vuelve a pedir al abrir el selector.
         }
     }
 
