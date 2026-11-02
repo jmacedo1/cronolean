@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.8.1] - 2026-11-02
+
+Con el cronómetro parado, al tocar un estado la app pregunta si cambiarlo ahora o al parar, para que no quede apuntado sin darse cuenta.
+
 ## [1.8.0] - 2026-11-02
 
 - Al iniciar el cronómetro, la tarea pasa sola a «En progreso». Si se para antes de 30 segundos, vuelve al estado que tenía.

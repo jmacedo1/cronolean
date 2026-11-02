@@ -18,8 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Estado de la tarea: lo normal es elegir a cuál pasará al parar el cronómetro, que no cambia nada todavía.
- * Cambiarlo en el momento va aparte y pide aceptar. Funciona sin red con los últimos estados guardados.
+ * Estado de la tarea. En marcha, elegir uno lo apunta para cuando se pare; parado, pregunta si cambiarlo ahora
+ * o al parar. Cambiarlo en el momento también va aparte y pide aceptar. Funciona sin red con los últimos estados guardados.
  */
 public class StatusActivity extends Activity {
     private final List<JSONObject> labels = new ArrayList<>();
@@ -53,7 +53,7 @@ public class StatusActivity extends Activity {
         root.addView(current);
 
         TextView title = new TextView(this);
-        title.setText("Al parar el cronómetro, pasar a:");
+        title.setText(store.running() ? "Al parar el cronómetro, pasar a:" : "Pasar a:");
         title.setPadding(0, pad, 0, 0);
         title.setTypeface(null, Typeface.BOLD);
         root.addView(title);
@@ -78,7 +78,7 @@ public class StatusActivity extends Activity {
         getWindow().setLayout((int) (getResources().getDisplayMetrics().widthPixels * 0.92),
                 android.view.ViewGroup.LayoutParams.WRAP_CONTENT);
 
-        list.setOnItemClickListener((p, v, pos, id) -> chooseAtStop(pos == 0 ? null : labels.get(pos - 1)));
+        list.setOnItemClickListener((p, v, pos, id) -> choose(pos == 0 ? null : labels.get(pos - 1)));
 
         show(store.statusLabels(store.ticketProject()));
         message.setText("Actualizando…");
@@ -119,6 +119,20 @@ public class StatusActivity extends Activity {
         current.setText("Estado actual: " + (name.isEmpty() ? "sin datos" : name));
     }
 
+    private void choose(JSONObject label) {
+        if (label == null || store.running() || label.optInt("id") == store.ticketStatus()) {
+            chooseAtStop(label);
+            return;
+        }
+        String name = label.optString("name");
+        new AlertDialog.Builder(this)
+                .setMessage("#" + store.ticketId() + " a «" + name + "»: ¿cambiar ahora o al parar?")
+                .setPositiveButton("Ahora", (d, w) -> changeNow(label))
+                .setNegativeButton("Al parar", (d, w) -> chooseAtStop(label))
+                .setNeutralButton("Cancelar", null)
+                .show();
+    }
+
     /** Solo se apunta: no se envía nada hasta parar. */
     private void chooseAtStop(JSONObject label) {
         if (label == null || label.optInt("id") == store.ticketStatus()) {
@@ -145,12 +159,14 @@ public class StatusActivity extends Activity {
         String name = label.optString("name");
         new AlertDialog.Builder(this)
                 .setMessage("¿Cambiar #" + store.ticketId() + " a «" + name + "» ahora?")
-                .setPositiveButton("Aceptar", (d, w) -> {
-                    Timer.changeNow(this, store, label.optInt("id"), name, label.optBoolean("done"));
-                    TimerWidget.refreshAll(this);
-                    finish();
-                })
+                .setPositiveButton("Aceptar", (d, w) -> changeNow(label))
                 .setNegativeButton("Cancelar", null)
                 .show();
+    }
+
+    private void changeNow(JSONObject label) {
+        Timer.changeNow(this, store, label.optInt("id"), label.optString("name"), label.optBoolean("done"));
+        TimerWidget.refreshAll(this);
+        finish();
     }
 }
