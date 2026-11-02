@@ -40,7 +40,7 @@ final class LeantimeApi {
         c.setRequestMethod("POST");
         c.setDoOutput(true);
         c.setRequestProperty("Content-Type", "application/json");
-        c.setRequestProperty("User-Agent", "CronoLean/1.7");
+        c.setRequestProperty("User-Agent", "CronoLean/1.8");
         c.setRequestProperty("x-api-key", apiKey);
         byte[] body = new JSONObject()
                 .put("jsonrpc", "2.0")

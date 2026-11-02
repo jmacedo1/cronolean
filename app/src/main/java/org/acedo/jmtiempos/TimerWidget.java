@@ -85,7 +85,7 @@ public class TimerWidget extends AppWidgetProvider {
         boolean showState = s.configured() && s.ticketId() != 0 && !s.reviewPending();
         v.setViewVisibility(R.id.state, showState ? View.VISIBLE : View.GONE);
         if (showState) {
-            String state = s.markDone() ? (s.closeStatusName().isEmpty() ? "Hecho" : s.closeStatusName()) + " al parar"
+            String state = s.hasStopStatus() ? "Al parar: " + (s.stopStatusName().isEmpty() ? "Hecho" : s.stopStatusName())
                     : s.ticketStatusName().isEmpty() ? "Estado" : s.ticketStatusName();
             v.setTextViewText(R.id.state, "▾ " + state);
             v.setOnClickPendingIntent(R.id.state, activity(c, StatusActivity.class, 7));

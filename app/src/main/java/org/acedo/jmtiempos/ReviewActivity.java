@@ -59,7 +59,7 @@ public class ReviewActivity extends Activity {
         discard.setText("Descartar");
         discard.setOnClickListener(v -> {
             s.clearReview();
-            s.setMarkDone(false);
+            s.clearStopStatus();
             s.setStatus("Descartado");
             TimerWidget.refreshAll(this);
             finish();

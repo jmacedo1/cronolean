@@ -70,6 +70,8 @@ final class Store {
 
     void setTicket(int id, String name, int project, int status) {
         p.edit().putInt("ticketId", id).putString("ticketName", name).apply();
+        clearStopStatus();
+        clearStartPrevStatus();
         setTicketState(project, status);
         rememberRecent(id);
     }
@@ -84,16 +86,23 @@ final class Store {
                 .remove("ticketStatus").remove("ticketStatusName").apply();
     }
 
-    /** Con el cronómetro en marcha, cerrar la tarea espera a parar: si no, el tiempo quedaría sin tarea. */
-    boolean markDone() { return p.getBoolean("markDone", false); }
-    int closeStatus() { return p.getInt("closeStatus", 0); }
-    String closeStatusName() { return p.getString("closeStatusName", ""); }
-    void setClose(int status, String name) {
-        p.edit().putBoolean("markDone", true).putInt("closeStatus", status).putString("closeStatusName", name).apply();
+    /** Estado elegido para cuando se pare el cronómetro. Las claves conservan el nombre de cuando solo se podía cerrar. */
+    boolean hasStopStatus() { return p.getBoolean("markDone", false); }
+    int stopStatus() { return p.getInt("closeStatus", 0); }
+    String stopStatusName() { return p.getString("closeStatusName", ""); }
+    boolean stopStatusCloses() { return p.getBoolean("closeCloses", true); }
+    void setStopStatus(int status, String name, boolean closes) {
+        p.edit().putBoolean("markDone", true).putInt("closeStatus", status)
+                .putString("closeStatusName", name).putBoolean("closeCloses", closes).apply();
     }
-    void setMarkDone(boolean v) {
-        p.edit().putBoolean("markDone", v).remove("closeStatus").remove("closeStatusName").apply();
+    void clearStopStatus() {
+        p.edit().remove("markDone").remove("closeStatus").remove("closeStatusName").remove("closeCloses").apply();
     }
+
+    /** Estado que tenía la tarea antes de iniciar, para devolverla si el inicio fue sin querer. */
+    int startPrevStatus() { return p.getInt("startPrevStatus", Integer.MIN_VALUE); }
+    void setStartPrevStatus(int status) { p.edit().putInt("startPrevStatus", status).apply(); }
+    void clearStartPrevStatus() { p.edit().remove("startPrevStatus").apply(); }
 
     /** Estados guardados de un proyecto, para poder cambiarlos sin cobertura. */
     JSONArray statusLabels(int project) {
@@ -114,7 +123,7 @@ final class Store {
         return status <= 0;
     }
 
-    private static String statusName(JSONArray labels, int status) {
+    static String statusName(JSONArray labels, int status) {
         for (int i = 0; i < labels.length(); i++) {
             JSONObject l = labels.optJSONObject(i);
             if (l.optInt("id") == status) return l.optString("name");

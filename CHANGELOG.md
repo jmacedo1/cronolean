@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.8.0] - 2026-11-02
+
+- Al iniciar el cronómetro, la tarea pasa sola a «En progreso». Si se para antes de 30 segundos, vuelve al estado que tenía.
+- El selector del widget ya no cambia el estado al momento: elige a cuál pasará la tarea al parar.
+- Para cambiarlo en el momento hay un botón aparte, «Cambiar el estado ahora…», que pide aceptar.
+
 ## [1.7.0] - 2026-11-01
 
 - El check «Hecha» pasa a ser un selector con todos los estados del proyecto de la tarea, y el widget muestra el estado actual.
